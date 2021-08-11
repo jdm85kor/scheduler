@@ -6,7 +6,7 @@ module.exports = {
   devServer: {
     contentBase: path.resolve(__dirname, './dist'),
   },
-  entry: path.resolve(__dirname, './src/index.js'),
+  entry: path.resolve(__dirname, './src/App.tsx'),
   output: {
     path: path.resolve(__dirname, './dist'),
     filename: 'bundle.[hash].js'
@@ -14,7 +14,8 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.(js|jsx)$/,
+        test: /\.(ts|tsx)$/,
+        include: [path.resolve(__dirname, "src")],
         exclude: /node_modules/,
         use: {
           loader: 'babel-loader',
@@ -31,6 +32,11 @@ module.exports = {
           },
         ],
       },
+      {
+        test: /\.tsx?$/,
+        loader: 'ts-loader',
+        exclude: /node_modules/
+      }
     ],
   },
   plugins: [
@@ -38,4 +44,8 @@ module.exports = {
       template: './index.html',
     })
   ],
+  resolve: {
+    modules: [path.join(__dirname, 'src'), 'node_modules'],
+    extensions: ['.ts', '.tsx', '.js', '.jsx', '.json'],
+  },
 };
