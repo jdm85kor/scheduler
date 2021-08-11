@@ -1,0 +1,8 @@
+{
+  "name": "scheduler",
+  "version": "1.0.0",
+  "description": "test",
+  "repository": "git@github.com:jdm85kor/scheduler.git",
+  "author": "jdm85kor <jdm85kor@gmail.com>",
+  "license": "MIT"
+}
