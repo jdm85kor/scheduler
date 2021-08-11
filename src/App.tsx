@@ -1,13 +1,10 @@
-/** @jsx jsx */
-import * as React from 'react';
-import * as ReactDom from 'react-dom';
-import { jsx, css } from '@emotion/react';
+import React from 'react';
+import ReactDom from 'react-dom';
+import Scheduler from './components/Scheduler';
 
 interface Props {}
 const App: React.FC<Props> = ({}) => (
-  <div>
-    adjust a
-  </div>
+  <Scheduler />
 );
 
 ReactDom.render(<App />, document.getElementById('app'));
