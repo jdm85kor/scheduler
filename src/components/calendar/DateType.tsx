@@ -1,27 +1,24 @@
 /** @jsx jsx */
-import React, { Dispatch, SetStateAction} from 'react';
+import React from 'react';
 import { jsx, css } from '@emotion/react';
 import { dateType } from '../../utils/constants';
 
 interface Props {
   type: dateType;
-  setType: Dispatch<SetStateAction<dateType>>;
+  setType: (type: dateType) => void;
+  className?: string;
 };
 
-const DateType: React.FC<Props> = ({ type, setType }) => {
+const DateType: React.FC<Props> = ({ type, setType, className }) => {
   return (
     <div css={css`
       display: inline-block;
       width: 140px;
       height: 40px;
       box-sizing: border-box;
-      &::before {
-        content: '';
-        display: inline-block;
-        height: 100%;
-        vertical-align: middle;
-      }
-    `}>
+    `}
+      className={className}
+    >
       <button
         css={css`
           background: ${type === dateType.month ? '#000' : '#fff'};

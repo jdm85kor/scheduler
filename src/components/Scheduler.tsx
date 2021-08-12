@@ -2,6 +2,8 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { jsx, css } from '@emotion/react';
 import DateType from './calendar/DateType';
+import Month from './calendar/month/Month';
+import Week from './calendar/Week';
 import { dateType } from '../utils/constants';
 
 interface Props {
@@ -29,32 +31,44 @@ const Scheduler: React.FC<Props> = ({ width = 1920, height = 1252}) => {
     <div css={css`
       display: block;
       margin: 0 auto;
+      padding: 0 134px;
       background: #fff;
       width: ${width}px;
       height: ${height}px;
       border: 1px solid #000;
+      box-sizing: border-box;
     `}>
       <header css={css`
         display: flex;
         position: relative;
-        margin-top: 112px;
+        margin: 112px auto 90px;
         justify-content: space-between;
       `}>
-        <button
-          type="button"
-          onClick={() => setDisplayDate(`${today.getFullYear()}-${today.getMonth() + 1}`)}
+        <div
           css={css`
-            width: 76px;
-            height: 40px;
-            background: #fff;
-            border: 1px solid #D2D2D2;
-            border-radius: 40px;
-            font-size: 16px;
-            line-height: 19px;
-            text-align: center;
-            cursor: pointer;
+            display: inline-block;
+            position: relative;
           `}
-        >오늘</button>
+        >
+          <button
+            type="button"
+            onClick={() => setDisplayDate(`${today.getFullYear()}-${today.getMonth()}`)}
+            css={css`
+              position: absolute;
+              top: 50%;
+              transform: translateY(-50%);
+              width: 76px;
+              height: 40px;
+              background: #fff;
+              border: 1px solid #D2D2D2;
+              border-radius: 40px;
+              font-size: 16px;
+              line-height: 19px;
+              text-align: center;
+              cursor: pointer;
+            `}
+          >오늘</button>
+        </div>
         <div css={css`
           display: inline-block;
         `}>
@@ -89,10 +103,20 @@ const Scheduler: React.FC<Props> = ({ width = 1920, height = 1252}) => {
             `}
           >&gt;</button>
         </div>
-        <DateType type={dt} setType={setDt}/>
+        <DateType
+          type={dt}
+          setType={(type: dateType): void => { setDt(type); }}
+          css={css`
+            padding-top: 5px;
+          `}
+        />
       </header>
       <main>
-
+        {
+          dt === dateType.month ?
+          <Month displayDate={displayDate} /> :
+          <Week />
+        }
       </main>
     </div>
   );
