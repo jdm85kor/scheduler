@@ -3,16 +3,23 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { jsx, css } from '@emotion/react';
 import MonthTitle from './MonthTitle';
 import PlanModal from '../../common/PlanModal';
+import { Plan } from '../../Scheduler';
 
 const maxRows = 6;
 const maxCols = 7;
 
 interface Props {
   displayDate: string;
+  plans: Plan[] | null;
+  onSavePlan: (date: string, plan: Plan) => void;
+  onDeletePlan: (date: string, id: number) => void;
 };
 
 const Month: React.FC<Props> = ({
   displayDate,
+  plans,
+  onSavePlan,
+  onDeletePlan,
 }) => {
   const [days, setDays] = useState<{
     fullDate: Date,
@@ -47,6 +54,10 @@ const Month: React.FC<Props> = ({
     }
     setDays(_days);
   }, [displayDate]);
+
+  useEffect(() => {
+    console.log(plans);
+  }, [plans]);
   
   return (
     <div>
@@ -140,8 +151,10 @@ const Month: React.FC<Props> = ({
       <PlanModal
         isShow={isShowPlanModal}
         onClose={() => setIsShowPlanModal(false)}
-        savePlan={() => {}}
-        deletePlan={() => {}}
+        onSavePlan={(dateYYYYM: string, title: string, date: string, startTime: string, endTime: string) => {
+          onSavePlan(dateYYYYM, { title, date, startTime, endTime });
+        }}
+        onDeletePlan={() => {}}
       />
     </div>
   );

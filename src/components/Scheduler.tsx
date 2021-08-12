@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { jsx, css } from '@emotion/react';
 import DateType from './calendar/header/DateType';
 import Month from './calendar/month/Month';
@@ -9,11 +9,24 @@ import { dateType } from '../utils/constants';
 interface Props {
   width?: number;
   height?: number;
+
 };
+export interface Plan {
+  id?: number,
+  title: string,
+  date: string,
+  startTime: string,
+  endTime: string,
+  color?: string,
+};
+
 const Scheduler: React.FC<Props> = ({ width = 1920, height = 1252}) => {
   const today = useMemo((): Date => new Date(), []);
   const [dt, setDt] = useState<dateType>(dateType.month);
   const [displayDate, setDisplayDate] = useState<string>(`${today.getFullYear()}-${today.getMonth()}`)
+  const [plans, setPlans] = useState<{
+    [date: string]: Plan[], // year & month, yyyy-MM
+  } | null>(null);
 
   const nextMonth = useCallback((): void => {
     const yAndM: string[] = displayDate.split('-');
@@ -26,6 +39,60 @@ const Scheduler: React.FC<Props> = ({ width = 1920, height = 1252}) => {
     const prev: Date = new Date(parseInt(yAndM[0]), parseInt(yAndM[1]) - 1);
     setDisplayDate(`${prev.getFullYear()}-${prev.getMonth()}`);
   }, [displayDate]);
+
+  const getPlansByDisplayMonth = useMemo((): Plan[] | null => {
+    if (!displayDate || !plans) return null;
+    const splited = displayDate.split('-');
+    return plans[`${parseInt(splited[0])}-${parseInt(splited[1])+1}`] || null;
+  }, [plans, displayDate]);
+
+  const savePlan = useCallback((date: string, plan: Plan): void => {
+    if (!date || !plan) return;
+
+    if (plan.id) { // modify
+      const newPlans = plans[date];
+      const idx = newPlans.findIndex(d => d.id === plan.id) || 0;
+      newPlans[idx] = {...plan};
+      setPlans(prev => {
+        return {
+          ...prev,
+          [date]: newPlans,
+        };
+      });
+    } else { // create
+      const date = plan.date;
+      const newPlan = {
+        ...plan,
+        id: new Date().getTime(),
+      };
+      console.log(newPlan);
+      setPlans(prev => {
+        if (!prev) {
+          return {
+            [date]: [newPlan],
+          };
+        } else if (prev[date]) {
+          return {
+            ...prev,
+            [date]: [
+              ...prev[date],
+              newPlan,
+            ]
+          };
+        } else {
+          return {
+            ...prev,
+            [date]: [plan]
+          };
+        }
+      });
+    }
+
+  }, [plans]);
+
+  const deletePlan = useCallback(() => {
+
+  }, [plans]);
 
   return (
     <div css={css`
@@ -113,11 +180,15 @@ const Scheduler: React.FC<Props> = ({ width = 1920, height = 1252}) => {
       <main>
         {
           dt === dateType.month ?
-          <Month displayDate={displayDate} /> :
+          <Month
+            displayDate={displayDate}
+            plans={getPlansByDisplayMonth}
+            onSavePlan={savePlan}
+            onDeletePlan={deletePlan}
+          /> :
           <Week />
         }
       </main>
-      {/* <Modal></Modal> */}
     </div>
   );
 };

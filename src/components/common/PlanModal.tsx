@@ -1,19 +1,88 @@
 /** @jsx jsx */
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import Modal from './Modal';
 import { jsx, css } from '@emotion/react';
 import ConfirmModal from './ConfirmModal';
+import { Plan } from '../Scheduler';
 
 interface Props {
   isShow: boolean,
   onClose: () => void,
-  savePlan: () => void,
-  deletePlan: () => void,
+  onSavePlan: (
+    dateYYYYM: string,
+    title: string,
+    date: string,
+    startTime: string,
+    endTime: string
+  ) => void,
+  onDeletePlan: () => void,
   type?: 'create' | 'modify',
 };
 
-const PlanModal: React.FC<Props> = ({ isShow, onClose, savePlan, deletePlan, type }) => {
+const timeOptions: {
+  name: string,
+  value: string,
+  hour: number,
+  min: number,
+}[] = (() => {
+  const _times = [];
+  for (let t = 0; t < 24 ; t++) {
+    const _timeValues = { name: `${t < 12 ? 'AM' : 'PM'} ${t || 12}`, hour: t };
+    _times.push({
+      ..._timeValues,
+      min: 0,
+      value: `${_timeValues.hour}:00`,
+      name: `${_timeValues.name}:00`,
+    });
+    _times.push({
+      ..._timeValues,
+      min: 30,
+      value: `${_timeValues.hour}:30`,
+      name: `${_timeValues.name}:30`,
+    });
+  }
+  return _times;
+})();
+
+const PlanModal: React.FC<Props> = ({ isShow, onClose, onSavePlan, onDeletePlan, type }) => {
   const [isShowConfirmModal, setIsShowConfirmModal] = useState<boolean>(false);
+  const [formData, setFormData] = useState<Plan>({
+    title: '',
+    date: '',
+    startTime: '',
+    endTime: '',
+  });
+  
+  const handleChangeTitle: React.ChangeEventHandler<HTMLInputElement> = useCallback((e) => {
+    const { value } = e.currentTarget;
+    setFormData(prev => {
+      return {
+        ...prev,
+        title: value,
+      }
+    });
+  }, [formData]);
+
+  const handleChangeDate: React.ChangeEventHandler<HTMLInputElement> = useCallback((e) => {
+    const { value } = e.currentTarget;
+    setFormData(prev => {
+      return {
+        ...prev,
+        date: value,
+      }
+    });
+  }, [formData]);
+
+  const handleChangeTime: React.ChangeEventHandler<HTMLSelectElement> = useCallback((e) => {
+    const { value, id } = e.currentTarget;
+    setFormData(prev => {
+      return {
+        ...prev,
+        [id]: value,
+      }
+    });
+  }, [formData]);
+
   return (
     <div>
       <Modal
@@ -50,6 +119,8 @@ const PlanModal: React.FC<Props> = ({ isShow, onClose, savePlan, deletePlan, typ
                     border-bottom: 1px solid #333333;
                   }
                 `}
+                value={formData.title}
+                onChange={handleChangeTitle}
               />
             </div>
             <div css={css`
@@ -79,6 +150,8 @@ const PlanModal: React.FC<Props> = ({ isShow, onClose, savePlan, deletePlan, typ
                   }
                 `}
                 type="date"
+                value={formData.date}
+                onChange={handleChangeDate}
               />
             </div>
             <div css={css`
@@ -106,7 +179,16 @@ const PlanModal: React.FC<Props> = ({ isShow, onClose, savePlan, deletePlan, typ
                     outline: none;
                   }
                 `}
-              />
+                id="startTime"
+                onChange={handleChangeTime}
+              >
+                <option value="" hidden>시간을 선택하세요</option>
+                {
+                  timeOptions.map(t => (
+                    <option key={t.value} value={t.value}>{t.name}</option>
+                  ))
+                }
+              </select>
             </div>
             <div css={css`
               display: inline-block;
@@ -134,6 +216,8 @@ const PlanModal: React.FC<Props> = ({ isShow, onClose, savePlan, deletePlan, typ
                   }
                 `}
                 type="date"
+                value={formData.date}
+                onChange={handleChangeDate}
               />
             </div>
             <div css={css`
@@ -160,7 +244,16 @@ const PlanModal: React.FC<Props> = ({ isShow, onClose, savePlan, deletePlan, typ
                     outline: none;
                   }
                 `}
-              />
+                id="endTime"
+                onChange={handleChangeTime}
+              >
+                <option value="" hidden>시간을 선택하세요</option>
+                {
+                  timeOptions.map(t => (
+                    <option key={t.value} value={t.value}>{t.name}</option>
+                  ))
+                }
+              </select>
             </div>
           </div>
           <div css={css`
@@ -191,7 +284,14 @@ const PlanModal: React.FC<Props> = ({ isShow, onClose, savePlan, deletePlan, typ
             <button
               type="button"
               onClick={() => {
-                savePlan();
+                const { title, date, startTime, endTime, } = formData;
+                onSavePlan(
+                  `formData.date`,
+                  title,
+                  date,
+                  startTime,
+                  endTime,
+                );
                 onClose();
               }}
             >저장</button>
@@ -202,7 +302,7 @@ const PlanModal: React.FC<Props> = ({ isShow, onClose, savePlan, deletePlan, typ
         isShow={isShowConfirmModal}
         onClose={() => setIsShowConfirmModal(false)}
         onDelete={() => {
-          deletePlan();
+          onDeletePlan();
           setIsShowConfirmModal(false);
         }}
       />
