@@ -2,7 +2,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { jsx, css } from '@emotion/react';
 import MonthTitle from './MonthTitle';
-import Modal from '../../common/Modal';
+import PlanModal from '../../common/PlanModal';
 
 const maxRows = 6;
 const maxCols = 7;
@@ -21,6 +21,8 @@ const Month: React.FC<Props> = ({
     date: number,
   }[][] | null>(null);
   const today = useMemo((): Date => new Date(), []);
+
+  const [isShowPlanModal, setIsShowPlanModal] = useState(false);
 
   useEffect(() => {
     const _days = [];
@@ -92,37 +94,41 @@ const Month: React.FC<Props> = ({
                       border: none;
                       cursor: pointer;
                     `}
-                    onClick={() => { alert(d.date)}}
+                    onClick={() => { setIsShowPlanModal(true) }}
                   >
-                    <span
-                      css={css`
-                        display: block;
-                        font-size: 20px;
-                        font-weight: 500;
-                        line-height: 24px;
-                        letter-spacing: 0;
-                        text-align: left;
-                        color: #828282;
-                        ${
-                          today.getFullYear() === d.year &&
-                          today.getMonth() === d.month &&
-                          today.getDate() === d.date && 
-                          `
-                            &::before {
-                              content: '';
-                              background: blue;
-                              width: 30px;
-                              height: 30px;
-                              position: absolute;
+                    <div css={css`
+                      position: relative;
+                      text-align: left;
+                    `}>
+                      <span
+                        css={css`
+                          display: inline-block;
+                          font-size: 20px;
+                          font-weight: 500;
+                          line-height: 24px;
+                          letter-spacing: 0;
+                          color: #828282;
+                          ${
+                            today.getFullYear() === d.year &&
+                            today.getMonth() === d.month &&
+                            today.getDate() === d.date && 
+                            `
+                              color: #fff;
+                              background: #0078FF;
                               border-radius: 100%;
-                            }
-                          `
-                        }
-                        
-                      `}
-                    >
-                      { d.date }
-                    </span>
+                            `
+                          }
+                          ${
+                            (parseInt(displayDate.split('-')[0]) !== d.year ||
+                            parseInt(displayDate.split('-')[1]) !== d.month) &&
+                            'color: #E0E0E0;'
+                          }
+                          
+                        `}
+                      >
+                        { d.date }
+                      </span>
+                    </div>
                     
                   </button>
                 </div>
@@ -131,6 +137,12 @@ const Month: React.FC<Props> = ({
           </div>
         ))
       }
+      <PlanModal
+        isShow={isShowPlanModal}
+        onClose={() => setIsShowPlanModal(false)}
+        savePlan={() => {}}
+        deletePlan={() => {}}
+      />
     </div>
   );
 };

@@ -35,7 +35,6 @@ const Scheduler: React.FC<Props> = ({ width = 1920, height = 1252}) => {
       background: #fff;
       width: ${width}px;
       height: ${height}px;
-      border: 1px solid #000;
       box-sizing: border-box;
     `}>
       <header css={css`
