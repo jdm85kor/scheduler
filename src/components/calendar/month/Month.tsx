@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import React, { useState, useMemo, useEffect } from 'react';
 import { jsx, css } from '@emotion/react';
-import MonthTitle from '../MonthTitle';
+import MonthTitle from './MonthTitle';
 
 const maxRows = 6;
 const maxCols = 7;
@@ -20,7 +20,7 @@ const Month: React.FC<Props> = ({
       _days.push([]);
       for (let j = 0; j < maxCols; j++) {
         _days[i].push({
-          num: j,
+          date: j,
         })
       }
     }
@@ -50,6 +50,7 @@ const Month: React.FC<Props> = ({
                   key={`${displayDate}-${dIndex}`}
                   css={css`
                     display: inline-block;
+                    padding: 20px;
                     width: calc(100% / 7);
                     min-height: 138px;
                     box-sizing: border-box;
@@ -58,8 +59,17 @@ const Month: React.FC<Props> = ({
                     }
                   `}
                 >
-                  <span>
-                    { d.num }
+                  <span
+                    css={css`
+                      font-size: 20px;
+                      font-weight: 500;
+                      line-height: 24px;
+                      letter-spacing: 0;
+                      text-align: left;
+                      color: #828282;
+                    `}
+                  >
+                    { d.date }
                   </span>
                 </div>
               ))

@@ -1,9 +1,9 @@
 /** @jsx jsx */
 import React, { useState, useMemo, useCallback } from 'react';
 import { jsx, css } from '@emotion/react';
-import DateType from './calendar/DateType';
+import DateType from './calendar/header/DateType';
 import Month from './calendar/month/Month';
-import Week from './calendar/Week';
+import Week from './calendar/week/Week';
 import { dateType } from '../utils/constants';
 
 interface Props {
@@ -118,6 +118,7 @@ const Scheduler: React.FC<Props> = ({ width = 1920, height = 1252}) => {
           <Week />
         }
       </main>
+      {/* <Modal></Modal> */}
     </div>
   );
 };

@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import React from 'react';
 import { jsx, css } from '@emotion/react';
-import { dateType } from '../../utils/constants';
+import { dateType } from '../../../utils/constants';
 
 interface Props {
   type: dateType;
