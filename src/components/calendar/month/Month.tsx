@@ -9,14 +9,14 @@ const maxRows = 6;
 const maxCols = 7;
 
 interface Props {
-  displayDate: string;
+  displayMonth: string;
   plans: Plan[] | null;
   onSavePlan: (date: string, plan: Plan) => void;
   onDeletePlan: (date: string, plan: Plan) => void;
 };
 
 const Month: React.FC<Props> = ({
-  displayDate,
+  displayMonth,
   plans,
   onSavePlan,
   onDeletePlan,
@@ -69,7 +69,7 @@ const Month: React.FC<Props> = ({
     for (let i = 0;  i < maxRows; i++) {
       _days.push([]);
       for (let j = 0; j < maxCols; j++) {
-        const yAndM = displayDate.split('-');
+        const yAndM = displayMonth.split('-');
         const thisMonthDate = new Date(parseInt(yAndM[0]), parseInt(yAndM[1]));
         
         const fullDate = new Date(
@@ -87,7 +87,7 @@ const Month: React.FC<Props> = ({
       }
     }
     setDays(_days);
-  }, [displayDate]);
+  }, [displayMonth]);
   
   return (
     <div>
@@ -95,7 +95,7 @@ const Month: React.FC<Props> = ({
       {
         !!days && days.map((ds, dsIndex) => (
           <div
-            key={`${displayDate}-${dsIndex}`}
+            key={`${displayMonth}-${dsIndex}`}
             css={css`
               position: relative;
               width: 100%;
@@ -109,7 +109,7 @@ const Month: React.FC<Props> = ({
             {
               !!ds && ds.map((d, dIndex) => (
                 <div
-                  key={`${displayDate}-${dsIndex}-${dIndex}`}
+                  key={`${displayMonth}-${dsIndex}-${dIndex}`}
                   css={css`
                     display: inline-block;
                     position: relative;
@@ -166,8 +166,8 @@ const Month: React.FC<Props> = ({
                             `
                           }
                           ${
-                            (parseInt(displayDate.split('-')[0]) !== d.year ||
-                            parseInt(displayDate.split('-')[1]) !== d.month) &&
+                            (parseInt(displayMonth.split('-')[0]) !== d.year ||
+                            parseInt(displayMonth.split('-')[1]) !== d.month) &&
                             'color: #E0E0E0;'
                           }
                           

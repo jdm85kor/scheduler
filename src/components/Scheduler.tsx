@@ -7,10 +7,17 @@ import Week from './calendar/week/Week';
 import { dateType } from '../utils/constants';
 import { getRandomColor } from '../utils/functions';
 
+const headerTitle = css`
+  padding: 0 38px;
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 48px;
+  letter-spacing: 0;
+  text-align: center;
+`
 interface Props {
   width?: number;
   height?: number;
-
 };
 export interface Plan {
   id?: number,
@@ -21,29 +28,44 @@ export interface Plan {
   color?: string,
 };
 
+const thisWeek = ((): [string, string] => {
+  const today = new Date();
+  const whichDay = today.getDay();
+  const sun = new Date(today.getFullYear(), today.getMonth(), today.getDate() - whichDay);
+  const satur = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 6 - whichDay );
+
+  return [`${sun.getFullYear()}-${sun.getMonth()}-${sun.getDate()}`,
+  `${satur.getFullYear()}-${satur.getMonth()}-${satur.getDate()}`];
+})();
+
 const Scheduler: React.FC<Props> = ({ width = 1920, height = 1252}) => {
   const today = useMemo((): Date => new Date(), []);
   const [dt, setDt] = useState<dateType>(dateType.month);
-  const [displayDate, setDisplayDate] = useState<string>(`${today.getFullYear()}-${today.getMonth()}`)
+  const [displayMonth, setDisplayMonth] = useState<string>(`${today.getFullYear()}-${today.getMonth()}`)
+  const [displayWeek, setDisplayWeek] = useState<[string, string]>(thisWeek);
   const [plans, setPlans] = useState<{
     [date: string]: Plan[], // year & month, yyyy-MM
   } | null>(null);
 
-  const nextMonth = useCallback((): void => {
-    const yAndM: string[] = displayDate.split('-');
-    const next: Date = new Date(parseInt(yAndM[0]), parseInt(yAndM[1]) + 1);
-    setDisplayDate(`${next.getFullYear()}-${next.getMonth()}`);
-  }, [displayDate]);
+  const moveMonth = useCallback((direction: 1 | -1): void => {
+    const yAndM: number[] = displayMonth.split('-').map(d => parseInt(d));
+    const move: Date = new Date(yAndM[0], yAndM[1] + direction);
+    setDisplayMonth(`${move.getFullYear()}-${move.getMonth()}`);
+  }, [displayMonth]);
 
-  const prevMonth = useCallback((): void => {
-    const yAndM: string[] = displayDate.split('-');
-    const prev: Date = new Date(parseInt(yAndM[0]), parseInt(yAndM[1]) - 1);
-    setDisplayDate(`${prev.getFullYear()}-${prev.getMonth()}`);
-  }, [displayDate]);
+  const moveWeek = useCallback((direction: 1 | -1): void => {
+    const thisSun = displayWeek[0].split('-').map(d => parseInt(d));
+    const thisSatur = displayWeek[1].split('-').map(d => parseInt(d));
+    const moveSun = new Date(thisSun[0], thisSun[1], thisSun[2] + 7 * direction);
+    const moveSatur = new Date(thisSatur[0], thisSatur[1],thisSatur[2] + 7 * direction);
+
+    setDisplayWeek([`${moveSun.getFullYear()}-${moveSun.getMonth()}-${moveSun.getDate()}`,
+    `${moveSatur.getFullYear()}-${moveSatur.getMonth()}-${moveSatur.getDate()}`]);
+  }, [displayWeek]);
 
   const getPlansByDisplayMonth = (): Plan[] | null => {
-    if (!displayDate || !plans) return null;
-    const splited = displayDate.split('-');
+    if (!displayMonth || !plans) return null;
+    const splited = displayMonth.split('-');
     return plans[`${splited[0]}-${parseInt(splited[1])+1}`] || null;
   };
 
@@ -97,12 +119,12 @@ const Scheduler: React.FC<Props> = ({ width = 1920, height = 1252}) => {
       ...prev,
       [date]: prev[date].filter(p => p.id !== plan.id),
     }));
-
-    
-
-    console.log(date, plan);
-
   }, [plans]);
+
+  const dateFormatYYYYMMDD = (date: string): string => {
+    const splited = date.split('-').map(d => parseInt(d));
+    return `${splited[0]}년 ${splited[1] + 1}월 ${splited[2]}일`
+  }
 
   return (
     <div css={css`
@@ -114,6 +136,7 @@ const Scheduler: React.FC<Props> = ({ width = 1920, height = 1252}) => {
       height: ${height}px;
       box-sizing: border-box;
     `}>
+      {/* header start */}
       <header css={css`
         display: flex;
         position: relative;
@@ -128,7 +151,10 @@ const Scheduler: React.FC<Props> = ({ width = 1920, height = 1252}) => {
         >
           <button
             type="button"
-            onClick={() => setDisplayDate(`${today.getFullYear()}-${today.getMonth()}`)}
+            onClick={() => dt === dateType.month ?
+              setDisplayMonth(`${today.getFullYear()}-${today.getMonth()}`) :
+              setDisplayWeek(thisWeek)
+            }
             css={css`
               position: absolute;
               top: 50%;
@@ -150,7 +176,7 @@ const Scheduler: React.FC<Props> = ({ width = 1920, height = 1252}) => {
         `}>
           <button
             type="button"
-            onClick={prevMonth}
+            onClick={() => dt === dateType.month ? moveMonth(-1) : moveWeek(-1)}
             css={css`
               font-size: 40px;
               background: #fff;          
@@ -158,19 +184,17 @@ const Scheduler: React.FC<Props> = ({ width = 1920, height = 1252}) => {
               cursor: pointer;
             `}
           >&lt;</button>
-          <span
-            css={css`
-              padding: 0 38px;
-              font-size: 40px;
-              font-weight: 700;
-              line-height: 48px;
-              letter-spacing: 0;
-              text-align: center;
-            `}
-          >{ displayDate.split('-')[0] }년 {parseInt(displayDate.split('-')[1]) + 1}월</span>
+          { dt === dateType.month ?
+            <span css={headerTitle}>
+              { displayMonth.split('-')[0] }년 {parseInt(displayMonth.split('-')[1]) + 1}월
+            </span> :
+            <span css={headerTitle}>
+              {dateFormatYYYYMMDD(displayWeek[0])} ~ {dateFormatYYYYMMDD(displayWeek[1])}
+            </span>
+          }
           <button
             type="button"
-            onClick={nextMonth}
+            onClick={() => dt === dateType.month ? moveMonth(1) : moveWeek(1)}
             css={css`
               font-size: 40px;
               background: #fff;          
@@ -187,16 +211,23 @@ const Scheduler: React.FC<Props> = ({ width = 1920, height = 1252}) => {
           `}
         />
       </header>
+      {/* header end */}
       <main>
         {
-          dt === dateType.month ?
+          // dt === dateType.month ?
+          false ?
           <Month
-            displayDate={displayDate}
+            displayMonth={displayMonth}
             plans={getPlansByDisplayMonth()}
             onSavePlan={savePlan}
             onDeletePlan={deletePlan}
           /> :
-          <Week />
+          <Week
+            displayWeek={displayWeek}
+            plans={null}
+            onSavePlan={savePlan}
+            onDeletePlan={deletePlan}
+          />
         }
       </main>
     </div>
