@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import React, { useState, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Modal from './Modal';
 import { jsx, css } from '@emotion/react';
 import ConfirmModal from './ConfirmModal';
@@ -7,16 +7,12 @@ import { Plan } from '../Scheduler';
 
 interface Props {
   isShow: boolean,
-  onClose: () => void,
-  onSavePlan: (
-    dateYYYYM: string,
-    title: string,
-    date: string,
-    startTime: string,
-    endTime: string
-  ) => void,
-  onDeletePlan: () => void,
+  plan?: Plan,
+  date?: string,
   type?: 'create' | 'modify',
+  onClose: () => void,
+  onSavePlan: (date: string, plan: Plan) => void,
+  onDeletePlan: (date: string, plan: Plan) => void,
 };
 
 const timeOptions: {
@@ -27,7 +23,7 @@ const timeOptions: {
 }[] = (() => {
   const _times = [];
   for (let t = 0; t < 24 ; t++) {
-    const _timeValues = { name: `${t < 12 ? 'AM' : 'PM'} ${t || 12}`, hour: t };
+    const _timeValues = { name: `${t < 12 ? 'AM' : 'PM'} ${!t ? 12 : t > 12 ? t - 12 : t}`, hour: t };
     _times.push({
       ..._timeValues,
       min: 0,
@@ -44,7 +40,15 @@ const timeOptions: {
   return _times;
 })();
 
-const PlanModal: React.FC<Props> = ({ isShow, onClose, onSavePlan, onDeletePlan, type }) => {
+const PlanModal: React.FC<Props> = ({
+  isShow,
+  onClose,
+  onSavePlan,
+  onDeletePlan,
+  type,
+  plan,
+  date,
+}) => {
   const [isShowConfirmModal, setIsShowConfirmModal] = useState<boolean>(false);
   const [formData, setFormData] = useState<Plan>({
     title: '',
@@ -75,13 +79,46 @@ const PlanModal: React.FC<Props> = ({ isShow, onClose, onSavePlan, onDeletePlan,
 
   const handleChangeTime: React.ChangeEventHandler<HTMLSelectElement> = useCallback((e) => {
     const { value, id } = e.currentTarget;
+
     setFormData(prev => {
       return {
         ...prev,
         [id]: value,
-      }
+      };
     });
   }, [formData]);
+
+  const handleClose = (): void => {
+    onClose();
+    setFormData({
+      title: '',
+      date: '',
+      startTime: '',
+      endTime: '',
+    });
+  };
+
+  useEffect(() => {
+    if (plan) {
+      const { title, date, startTime, endTime } = plan;
+      setFormData({
+        title,
+        date,
+        startTime,
+        endTime,
+      });
+    } else if (date) {
+      const splitedDate = date.split('-');
+      splitedDate[1] = `${parseInt(splitedDate[1]) + 1}`;
+      if (parseInt(splitedDate[1]) < 10) splitedDate[1] = `0${splitedDate[1]}`;
+      if (parseInt(splitedDate[2]) < 10) splitedDate[2] = `0${splitedDate[2]}`;
+
+      setFormData(prev => ({
+        ...prev,
+        date: splitedDate.join('-'),
+      }));
+    }
+  }, [plan, date]);
 
   return (
     <div>
@@ -89,7 +126,7 @@ const PlanModal: React.FC<Props> = ({ isShow, onClose, onSavePlan, onDeletePlan,
         isShow={isShow}
         title={type === 'modify' ? '일정 수정하기' : '일정 만들기'}
         titleAlign="left"
-        onClose={onClose}
+        onClose={handleClose}
       >
         <div>
           <div css={css`
@@ -180,6 +217,7 @@ const PlanModal: React.FC<Props> = ({ isShow, onClose, onSavePlan, onDeletePlan,
                   }
                 `}
                 id="startTime"
+                defaultValue={plan && timeOptions.find(t => t.value === plan.startTime)?.value}
                 onChange={handleChangeTime}
               >
                 <option value="" hidden>시간을 선택하세요</option>
@@ -246,6 +284,7 @@ const PlanModal: React.FC<Props> = ({ isShow, onClose, onSavePlan, onDeletePlan,
                 `}
                 id="endTime"
                 onChange={handleChangeTime}
+                defaultValue={plan && timeOptions.find(t => t.value === plan.endTime)?.value}
               >
                 <option value="" hidden>시간을 선택하세요</option>
                 {
@@ -276,7 +315,7 @@ const PlanModal: React.FC<Props> = ({ isShow, onClose, onSavePlan, onDeletePlan,
               }
             }
           `}>
-            <button type="button" onClick={onClose}>취소</button>
+            <button type="button" onClick={handleClose}>취소</button>
             {
               type === 'modify' &&
               <button type="button" onClick={() => setIsShowConfirmModal(true)}>삭제</button>
@@ -284,15 +323,15 @@ const PlanModal: React.FC<Props> = ({ isShow, onClose, onSavePlan, onDeletePlan,
             <button
               type="button"
               onClick={() => {
-                const { title, date, startTime, endTime, } = formData;
                 onSavePlan(
-                  `formData.date`,
-                  title,
-                  date,
-                  startTime,
-                  endTime,
+                  formData.date.split('-').slice(0, 2).map(d => parseInt(d)).join('-'),
+                  {
+                    id : plan?.id,
+                    color: plan?.color,
+                    ...formData
+                  }
                 );
-                onClose();
+                handleClose();
               }}
             >저장</button>
           </div>
@@ -300,10 +339,20 @@ const PlanModal: React.FC<Props> = ({ isShow, onClose, onSavePlan, onDeletePlan,
       </Modal>
       <ConfirmModal
         isShow={isShowConfirmModal}
-        onClose={() => setIsShowConfirmModal(false)}
-        onDelete={() => {
-          onDeletePlan();
+        onClose={() => {
           setIsShowConfirmModal(false);
+        }}
+        onDelete={() => {
+          onDeletePlan(
+            formData.date.split('-').slice(0, 2).map(d => parseInt(d)).join('-'),
+            {
+              id : plan?.id,
+              color: plan?.color,
+              ...formData
+            }
+          );
+          setIsShowConfirmModal(false);
+          handleClose();
         }}
       />
     </div>

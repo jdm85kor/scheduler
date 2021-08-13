@@ -12,7 +12,7 @@ interface Props {
   displayDate: string;
   plans: Plan[] | null;
   onSavePlan: (date: string, plan: Plan) => void;
-  onDeletePlan: (date: string, id: number) => void;
+  onDeletePlan: (date: string, plan: Plan) => void;
 };
 
 const Month: React.FC<Props> = ({
@@ -29,7 +29,17 @@ const Month: React.FC<Props> = ({
   }[][] | null>(null);
   const today = useMemo((): Date => new Date(), []);
 
-  const [isShowPlanModal, setIsShowPlanModal] = useState(false);
+  const [planModalInfo, setPlanModalInfo] = useState<{
+    isShow: boolean,
+    date: string | null,
+    plan: Plan | null,
+    type: 'create' | 'modify',
+  }>({
+    isShow: false,
+    date: null,
+    plan: null,
+    type: 'create',
+  });
 
   useEffect(() => {
     const _days = [];
@@ -39,16 +49,17 @@ const Month: React.FC<Props> = ({
         const yAndM = displayDate.split('-');
         const thisMonthDate = new Date(parseInt(yAndM[0]), parseInt(yAndM[1]));
         
-        const date = new Date(
+        const fullDate = new Date(
           parseInt(yAndM[0]),
           parseInt(yAndM[1]),
-          thisMonthDate.getDay() ? i * 7 + j - thisMonthDate.getDay() + 1: i * 7 + j - 6);
+          thisMonthDate.getDay() ? i * 7 + j - thisMonthDate.getDay() + 1: i * 7 + j - 6
+        );
 
         _days[i].push({
-          fullDate: date,
-          year: date.getFullYear(),
-          month: date.getMonth(),
-          date: date.getDate(),
+          fullDate,
+          year: fullDate.getFullYear(),
+          month: fullDate.getMonth(),
+          date: fullDate.getDate(),
         });
       }
     }
@@ -56,7 +67,7 @@ const Month: React.FC<Props> = ({
   }, [displayDate]);
 
   useEffect(() => {
-    console.log(plans);
+    console.log('plans ===> ', plans);
   }, [plans]);
   
   return (
@@ -105,11 +116,17 @@ const Month: React.FC<Props> = ({
                       border: none;
                       cursor: pointer;
                     `}
-                    onClick={() => { setIsShowPlanModal(true) }}
+                    onClick={() => { setPlanModalInfo({
+                      isShow: true,
+                      date: `${d.year}-${d.month}-${d.date}`,
+                      plan: null,
+                      type: 'create',
+                    }) }}
                   >
                     <div css={css`
                       position: relative;
                       text-align: left;
+                      width: 100%;
                     `}>
                       <span
                         css={css`
@@ -139,8 +156,44 @@ const Month: React.FC<Props> = ({
                       >
                         { d.date }
                       </span>
+                      {
+                        plans && !!plans.length && plans
+                        .filter(p => {
+                          const planDate = p.date.split('-').map(d => parseInt(d)).join('');
+                          const calDate = [d.year, d.month + 1, d.date].join('');
+                          return planDate === calDate;
+                        })
+                        .map(p => (
+                          <div
+                            key={p.id}
+                            css={css`
+                              margin-top: 8px;
+                              padding: 8px 12px;
+                              height: 32px;
+                              background: ${p.color};
+                              color: #fff;
+                              box-sizing: border-box;
+                              font-size: 14px;
+                              font-weight: 400;
+                              line-height: 17px;
+                              letter-spacing: 0;
+                              text-align: left;
+                              border-radius: 4px;
+                            `}
+                            onClick={(e) => {
+                              e.stopPropagation();
+
+                              setPlanModalInfo({
+                                isShow: true,
+                                date: `${d.year}-${d.month}-${d.date}`,
+                                plan: p,
+                                type: 'modify',
+                              })
+                            }}
+                          >{p.title}</div>
+                        ))
+                      }
                     </div>
-                    
                   </button>
                 </div>
               ))
@@ -148,14 +201,15 @@ const Month: React.FC<Props> = ({
           </div>
         ))
       }
-      <PlanModal
-        isShow={isShowPlanModal}
-        onClose={() => setIsShowPlanModal(false)}
-        onSavePlan={(dateYYYYM: string, title: string, date: string, startTime: string, endTime: string) => {
-          onSavePlan(dateYYYYM, { title, date, startTime, endTime });
-        }}
-        onDeletePlan={() => {}}
-      />
+      {
+        planModalInfo.isShow &&
+        <PlanModal
+          { ...planModalInfo }
+          onClose={() => setPlanModalInfo({ isShow: false, date: null, plan: null, type: 'create' })}
+          onSavePlan={onSavePlan}
+          onDeletePlan={onDeletePlan}
+        />
+      }
     </div>
   );
 };

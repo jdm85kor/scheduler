@@ -5,6 +5,7 @@ import DateType from './calendar/header/DateType';
 import Month from './calendar/month/Month';
 import Week from './calendar/week/Week';
 import { dateType } from '../utils/constants';
+import { getRandomColor } from '../utils/functions';
 
 interface Props {
   width?: number;
@@ -40,11 +41,11 @@ const Scheduler: React.FC<Props> = ({ width = 1920, height = 1252}) => {
     setDisplayDate(`${prev.getFullYear()}-${prev.getMonth()}`);
   }, [displayDate]);
 
-  const getPlansByDisplayMonth = useMemo((): Plan[] | null => {
+  const getPlansByDisplayMonth = (): Plan[] | null => {
     if (!displayDate || !plans) return null;
     const splited = displayDate.split('-');
-    return plans[`${parseInt(splited[0])}-${parseInt(splited[1])+1}`] || null;
-  }, [plans, displayDate]);
+    return plans[`${splited[0]}-${parseInt(splited[1])+1}`] || null;
+  };
 
   const savePlan = useCallback((date: string, plan: Plan): void => {
     if (!date || !plan) return;
@@ -60,12 +61,11 @@ const Scheduler: React.FC<Props> = ({ width = 1920, height = 1252}) => {
         };
       });
     } else { // create
-      const date = plan.date;
       const newPlan = {
         ...plan,
         id: new Date().getTime(),
+        color: `#${getRandomColor()}`,
       };
-      console.log(newPlan);
       setPlans(prev => {
         if (!prev) {
           return {
@@ -90,7 +90,17 @@ const Scheduler: React.FC<Props> = ({ width = 1920, height = 1252}) => {
 
   }, [plans]);
 
-  const deletePlan = useCallback(() => {
+  const deletePlan = useCallback((date: string, plan: Plan): void => {
+    if (!date || !plan) return;
+    
+    setPlans(prev => ({
+      ...prev,
+      [date]: prev[date].filter(p => p.id !== plan.id),
+    }));
+
+    
+
+    console.log(date, plan);
 
   }, [plans]);
 
@@ -182,7 +192,7 @@ const Scheduler: React.FC<Props> = ({ width = 1920, height = 1252}) => {
           dt === dateType.month ?
           <Month
             displayDate={displayDate}
-            plans={getPlansByDisplayMonth}
+            plans={getPlansByDisplayMonth()}
             onSavePlan={savePlan}
             onDeletePlan={deletePlan}
           /> :
