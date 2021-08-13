@@ -98,6 +98,29 @@ const PlanModal: React.FC<Props> = ({
     });
   };
 
+  const compareTimes = useCallback((start: string, end: string): boolean => {
+    return new Date(2021, 1, 1, ...end?.split(':').map(d => parseInt(d))).getTime()
+      - new Date(2021, 1, 1, ...start?.split(':').map(d => parseInt(d))).getTime() <= 0
+  }, [formData]);
+
+  const handleClickSave = useCallback((): void => {
+    if (Object.entries(formData).filter(d => !d[1]).length) alert('입력이 종료되지 않았습니다.');
+    else if (compareTimes(formData.startTime, formData.endTime)) {
+      alert('시간이 올바르지 않습니다');
+    } else {
+      onSavePlan(
+        formData.date.split('-').slice(0, 2).map(d => parseInt(d)).join('-'),
+        {
+          id : plan?.id,
+          color: plan?.color,
+          ...formData
+        }
+      );
+      handleClose();
+    }
+
+  }, [formData]);
+
   useEffect(() => {
     if (plan) {
       const { title, date, startTime, endTime } = plan;
@@ -322,17 +345,7 @@ const PlanModal: React.FC<Props> = ({
             }
             <button
               type="button"
-              onClick={() => {
-                onSavePlan(
-                  formData.date.split('-').slice(0, 2).map(d => parseInt(d)).join('-'),
-                  {
-                    id : plan?.id,
-                    color: plan?.color,
-                    ...formData
-                  }
-                );
-                handleClose();
-              }}
+              onClick={handleClickSave}
             >저장</button>
           </div>
         </div>

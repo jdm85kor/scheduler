@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { jsx, css } from '@emotion/react';
 import MonthTitle from './MonthTitle';
 import PlanModal from '../../common/PlanModal';
@@ -27,6 +27,7 @@ const Month: React.FC<Props> = ({
     month: number,
     date: number,
   }[][] | null>(null);
+  const [cntPlans, setCntPlans] = useState<number[]>(new Array(0, 0, 0, 0, 0, 0));
   const today = useMemo((): Date => new Date(), []);
 
   const [planModalInfo, setPlanModalInfo] = useState<{
@@ -40,6 +41,28 @@ const Month: React.FC<Props> = ({
     plan: null,
     type: 'create',
   });
+
+  const getMatchedPlansByDate = useCallback((day: { year: number, month: number, date: number }, whichWeek: number): Plan[] => {
+    const { year, month, date } = day;
+    if (plans && !!plans.length) {
+      const _p = plans.filter(p => {
+        const planDate = p.date.split('-').map(d => parseInt(d)).join('');
+        const calDate = [year, month + 1, date].join('');
+        return planDate === calDate;
+      });
+
+      if (cntPlans[whichWeek] < _p.length) {
+        setCntPlans(prev => {
+          const _prev = prev;
+          _prev[whichWeek] = Math.max(_prev[whichWeek], _p.length);
+          return _prev;
+        });
+      }
+
+      return _p;
+    }
+    return [];
+  }, [plans]);
 
   useEffect(() => {
     const _days = [];
@@ -65,10 +88,6 @@ const Month: React.FC<Props> = ({
     }
     setDays(_days);
   }, [displayDate]);
-
-  useEffect(() => {
-    console.log('plans ===> ', plans);
-  }, [plans]);
   
   return (
     <div>
@@ -80,15 +99,15 @@ const Month: React.FC<Props> = ({
             css={css`
               position: relative;
               width: 100%;
-              height: 138px;
+              height: ${cntPlans[dsIndex] > 2 ? (cntPlans[dsIndex] - 2) * 40 + 138 : 138}px;
               box-sizing: border-box;
-              & + & {
+              &:not(:first-of-type) {
                 border-top: 1px solid #D2D2D2;
               }
             `}
           >
             {
-              ds.map((d, dIndex) => (
+              !!ds && ds.map((d, dIndex) => (
                 <div
                   key={`${displayDate}-${dsIndex}-${dIndex}`}
                   css={css`
@@ -157,12 +176,7 @@ const Month: React.FC<Props> = ({
                         { d.date }
                       </span>
                       {
-                        plans && !!plans.length && plans
-                        .filter(p => {
-                          const planDate = p.date.split('-').map(d => parseInt(d)).join('');
-                          const calDate = [d.year, d.month + 1, d.date].join('');
-                          return planDate === calDate;
-                        })
+                        getMatchedPlansByDate(d, dsIndex)
                         .map(p => (
                           <div
                             key={p.id}
