@@ -5,6 +5,70 @@ import { jsx, css } from '@emotion/react';
 import ConfirmModal from './ConfirmModal';
 import { Plan } from '../Scheduler';
 
+const labelCss = css`
+  display: block;
+  height: 18x;
+  text-align: left;
+  color: #828282;
+`;
+const titleInputCss = css`
+  width: 100%;
+  height: 30px;
+  border: none;
+  border-bottom: 1px solid #E0E0E0;
+  &:focus {
+    outline: none;
+    border-bottom: 1px solid #333333;
+  }
+`;
+const halfComp = css`
+  display: inline-block;
+  width: calc((100% - 20px) / 2);
+  margin-bottom: 24px;
+  &:nth-of-type(3),
+  &:nth-of-type(5) {
+    margin-left: 20px;
+  }
+`;
+const inputCss = css`
+  width: 100%;
+  height: 30px;
+  border: none;
+  border-bottom: 1px solid #E0E0E0;
+  &:focus {
+    outline: none;
+  }
+`;
+const selectTimeCss = css`
+  width: 100%;
+  height: 30px;
+  border: none;
+  border-bottom: 1px solid #E0E0E0;
+  &:focus {
+    outline: none;
+  }
+`;
+const buttonGroup = css`
+  text-align: center;
+  & > button {
+    margin: 40px 12px 0 0;
+    width: 152px;
+    height: 52px;
+    border: none;
+    cursor: pointer;
+
+    &:first-of-type {
+      background: #F3F3F3;
+      color: #000;
+    }
+    &:last-of-type {
+      margin-right: 0;
+      background: #000;
+      color: #fff;
+    }
+  }
+`;
+
 interface Props {
   isShow: boolean,
   plan?: Plan,
@@ -153,93 +217,40 @@ const PlanModal: React.FC<Props> = ({
         onClose={handleClose}
       >
         <div>
-          <div css={css`
-            width: 560px;
-          `}>
-            <div css={css`
-              margin-bottom: 24px;
-            `}>
+          <div css={css`width: 560px;`}>
+            <div css={css`margin-bottom: 24px;`}>
               <label
-                css={css`
-                  display: block;
-                  height: 18x;
-                  text-align: left;
-                  color: #828282;
-                `}
+                css={labelCss}
               >
                 일정 제목을 입력하세요
               </label>
               <input
-                css={css`
-                  width: 100%;
-                  height: 30px;
-                  border: none;
-                  border-bottom: 1px solid #E0E0E0;
-                  &:focus {
-                    outline: none;
-                    border-bottom: 1px solid #333333;
-                  }
-                `}
+                css={titleInputCss}
                 value={formData.title}
                 onChange={handleChangeTitle}
               />
             </div>
-            <div css={css`
-              display: inline-block;
-              width: calc((100% - 20px) / 2);
-              margin-right: 20px;
-              margin-bottom: 24px;
-            `}>
+            <div css={halfComp}>
               <label
-                css={css`
-                  display: block;
-                  height: 18x;
-                  text-align: left;
-                  color: #828282;
-                `}
+                css={labelCss}
               >
                 시작 날짜
               </label>
               <input
-                css={css`
-                  width: 100%;
-                  height: 30px;
-                  border: none;
-                  border-bottom: 1px solid #E0E0E0;
-                  &:focus {
-                    outline: none;
-                  }
-                `}
+                css={inputCss}
                 type="date"
                 value={formData.date}
                 onChange={handleChangeDate}
               />
             </div>
-            <div css={css`
-              display: inline-block;
-              width: calc((100% - 20px) / 2);
-              margin-bottom: 24px;
-            `}>
+            <div css={halfComp}>
               <label
-                css={css`
-                  display: block;
-                  height: 18x;
-                  text-align: left;
-                  color: #828282;
-                `}
+                css={labelCss}
               >
                 시작 시간
               </label>
               <select
-                css={css`
-                  width: 100%;
-                  height: 30px;
-                  border: none;
-                  border-bottom: 1px solid #E0E0E0;
-                  &:focus {
-                    outline: none;
-                  }
-                `}
+                css={selectTimeCss}
                 id="startTime"
                 defaultValue={timeOptions.find(t => t.value === formData.startTime)?.value}
                 onChange={handleChangeTime}
@@ -252,60 +263,23 @@ const PlanModal: React.FC<Props> = ({
                 }
               </select>
             </div>
-            <div css={css`
-              display: inline-block;
-              width: calc((100% - 20px) / 2);
-              margin-right: 20px;
-            `}>
-              <label
-                css={css`
-                  display: block;
-                  height: 18x;
-                  text-align: left;
-                  color: #828282;
-                `}
-              >
+            <div css={halfComp}>
+              <label css={labelCss}>
                 종료 날짜
               </label>
               <input
-                css={css`
-                  width: 100%;
-                  height: 30px;
-                  border: none;
-                  border-bottom: 1px solid #E0E0E0;
-                  &:focus {
-                    outline: none;
-                  }
-                `}
+                css={inputCss}
                 type="date"
                 value={formData.date}
                 onChange={handleChangeDate}
               />
             </div>
-            <div css={css`
-              display: inline-block;
-              width: calc((100% - 20px) / 2);
-            `}>
-              <label
-                css={css`
-                  display: block;
-                  height: 18x;
-                  text-align: left;
-                  color: #828282;
-                `}
-              >
+            <div css={halfComp}>
+              <label css={labelCss}>
                 종료 시간
               </label>
               <select
-                css={css`
-                  width: 100%;
-                  height: 30px;
-                  border: none;
-                  border-bottom: 1px solid #E0E0E0;
-                  &:focus {
-                    outline: none;
-                  }
-                `}
+                css={selectTimeCss}
                 id="endTime"
                 onChange={handleChangeTime}
                 defaultValue={timeOptions.find(t => t.value === formData.endTime)?.value}
@@ -319,26 +293,7 @@ const PlanModal: React.FC<Props> = ({
               </select>
             </div>
           </div>
-          <div css={css`
-            text-align: center;
-            & > button {
-              margin: 40px 12px 0 0;
-              width: 152px;
-              height: 52px;
-              border: none;
-              cursor: pointer;
-
-              &:first-of-type {
-                background: #F3F3F3;
-                color: #000;
-              }
-              &:last-of-type {
-                margin-right: 0;
-                background: #000;
-                color: #fff;
-              }
-            }
-          `}>
+          <div css={buttonGroup}>
             <button type="button" onClick={handleClose}>취소</button>
             {
               type === 'modify' &&

@@ -8,6 +8,75 @@ import { Plan } from '../../Scheduler';
 const maxRows = 6;
 const maxCols = 7;
 
+const rowCss = (p: number) => css`
+  position: relative;
+  width: 100%;
+  height: ${p > 2 ? (p - 2) * 40 + 138 : 138}px;
+  box-sizing: border-box;
+  &:not(:first-of-type) {
+    border-top: 1px solid #D2D2D2;
+  }
+`;
+const colCss = css`
+  display: inline-block;
+  position: relative;
+  margin: 0;
+  width: calc(100% / 7);
+  height: 100%;
+  box-sizing: border-box;
+  & + & {
+    border-left: 1px solid #D2D2D2;
+  }
+`;
+const dayButtonCss = css`
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  height: 100%;
+  padding: 20px;
+  background: #fff;
+  border: none;
+  cursor: pointer;
+`;
+const dayNumber = (year: number, month: number, date: number, today: Date, displayMonth: string) => css`
+  display: inline-block;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 24px;
+  letter-spacing: 0;
+  color: #828282;
+  ${
+    today.getFullYear() === year &&
+    today.getMonth() === month &&
+    today.getDate() === date && 
+    `
+      color: #fff;
+      background: #0078FF;
+      border-radius: 100%;
+    `
+  }
+  ${
+    (parseInt(displayMonth.split('-')[0]) !== year ||
+    parseInt(displayMonth.split('-')[1]) !== month) &&
+    'color: #E0E0E0;'
+  }
+`
+const planCss = (color: string) => css`
+  margin-top: 8px;
+  padding: 8px 12px;
+  height: 32px;
+  background: ${color};
+  color: #fff;
+  box-sizing: border-box;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 17px;
+  letter-spacing: 0;
+  text-align: left;
+  border-radius: 4px;
+`;
+
 interface Props {
   displayMonth: string;
   plans: Plan[] | null;
@@ -97,45 +166,17 @@ const Month: React.FC<Props> = ({
         !!days && days.map((ds, dsIndex) => (
           <div
             key={`${displayMonth}-${dsIndex}`}
-            css={css`
-              position: relative;
-              width: 100%;
-              height: ${cntPlans[dsIndex] > 2 ? (cntPlans[dsIndex] - 2) * 40 + 138 : 138}px;
-              box-sizing: border-box;
-              &:not(:first-of-type) {
-                border-top: 1px solid #D2D2D2;
-              }
-            `}
+            css={rowCss(cntPlans[dsIndex])}
           >
             {
               !!ds && ds.map((d, dIndex) => (
                 <div
                   key={`${displayMonth}-${dsIndex}-${dIndex}`}
-                  css={css`
-                    display: inline-block;
-                    position: relative;
-                    margin: 0;
-                    width: calc(100% / 7);
-                    height: 100%;
-                    box-sizing: border-box;
-                    & + & {
-                      border-left: 1px solid #D2D2D2;
-                    }
-                  `}
+                  css={colCss}
                 >
                   <button
                     type="button"
-                    css={css`
-                      display: inline-flex;
-                      flex-direction: column;
-                      align-items: flex-start;
-                      width: 100%;
-                      height: 100%;
-                      padding: 20px;
-                      background: #fff;
-                      border: none;
-                      cursor: pointer;
-                    `}
+                    css={dayButtonCss}
                     onClick={() => { setPlanModalInfo({
                       isShow: true,
                       date: `${d.year}-${d.month}-${d.date}`,
@@ -148,32 +189,7 @@ const Month: React.FC<Props> = ({
                       text-align: left;
                       width: 100%;
                     `}>
-                      <span
-                        css={css`
-                          display: inline-block;
-                          font-size: 20px;
-                          font-weight: 500;
-                          line-height: 24px;
-                          letter-spacing: 0;
-                          color: #828282;
-                          ${
-                            today.getFullYear() === d.year &&
-                            today.getMonth() === d.month &&
-                            today.getDate() === d.date && 
-                            `
-                              color: #fff;
-                              background: #0078FF;
-                              border-radius: 100%;
-                            `
-                          }
-                          ${
-                            (parseInt(displayMonth.split('-')[0]) !== d.year ||
-                            parseInt(displayMonth.split('-')[1]) !== d.month) &&
-                            'color: #E0E0E0;'
-                          }
-                          
-                        `}
-                      >
+                      <span css={dayNumber(d.year, d.month, d.date, today, displayMonth)}>
                         { d.date }
                       </span>
                       {
@@ -181,20 +197,7 @@ const Month: React.FC<Props> = ({
                         .map(p => (
                           <div
                             key={p.id}
-                            css={css`
-                              margin-top: 8px;
-                              padding: 8px 12px;
-                              height: 32px;
-                              background: ${p.color};
-                              color: #fff;
-                              box-sizing: border-box;
-                              font-size: 14px;
-                              font-weight: 400;
-                              line-height: 17px;
-                              letter-spacing: 0;
-                              text-align: left;
-                              border-radius: 4px;
-                            `}
+                            css={planCss(p.color)}
                             onClick={(e) => {
                               e.stopPropagation();
 

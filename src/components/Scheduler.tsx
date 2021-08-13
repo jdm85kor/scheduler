@@ -7,6 +7,12 @@ import Week from './calendar/week/Week';
 import { dateType } from '../utils/constants';
 import { getRandomColor } from '../utils/functions';
 
+const headerCss = css`
+  display: flex;
+  position: relative;
+  margin: 112px auto 90px;
+  justify-content: space-between;
+`;
 const headerTitle = css`
   padding: 0 38px;
   font-size: 40px;
@@ -14,7 +20,27 @@ const headerTitle = css`
   line-height: 48px;
   letter-spacing: 0;
   text-align: center;
-`
+`;
+const todayButton = css`
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 76px;
+  height: 40px;
+  background: #fff;
+  border: 1px solid #D2D2D2;
+  border-radius: 40px;
+  font-size: 16px;
+  line-height: 19px;
+  text-align: center;
+  cursor: pointer;
+`;
+const arrowCss = css`
+  font-size: 40px;
+  background: #fff;          
+  border: none;
+  cursor: pointer;
+`;
 interface Props {
   width?: number;
   height?: number;
@@ -145,12 +171,7 @@ const Scheduler: React.FC<Props> = ({ width = 1920 }) => {
       box-sizing: border-box;
     `}>
       {/* header start */}
-      <header css={css`
-        display: flex;
-        position: relative;
-        margin: 112px auto 90px;
-        justify-content: space-between;
-      `}>
+      <header css={headerCss}>
         <div
           css={css`
             display: inline-block;
@@ -163,34 +184,14 @@ const Scheduler: React.FC<Props> = ({ width = 1920 }) => {
               setDisplayMonth(`${today.getFullYear()}-${today.getMonth()}`) :
               setDisplayWeek(thisWeek)
             }
-            css={css`
-              position: absolute;
-              top: 50%;
-              transform: translateY(-50%);
-              width: 76px;
-              height: 40px;
-              background: #fff;
-              border: 1px solid #D2D2D2;
-              border-radius: 40px;
-              font-size: 16px;
-              line-height: 19px;
-              text-align: center;
-              cursor: pointer;
-            `}
+            css={todayButton}
           >오늘</button>
         </div>
-        <div css={css`
-          display: inline-block;
-        `}>
+        <div css={css`display: inline-block;`}>
           <button
             type="button"
             onClick={() => dt === dateType.month ? moveMonth(-1) : moveWeek(-1)}
-            css={css`
-              font-size: 40px;
-              background: #fff;          
-              border: none;
-              cursor: pointer;
-            `}
+            css={arrowCss}
           >&lt;</button>
           { dt === dateType.month ?
             <span css={headerTitle}>
@@ -203,20 +204,13 @@ const Scheduler: React.FC<Props> = ({ width = 1920 }) => {
           <button
             type="button"
             onClick={() => dt === dateType.month ? moveMonth(1) : moveWeek(1)}
-            css={css`
-              font-size: 40px;
-              background: #fff;          
-              border: none;
-              cursor: pointer;
-            `}
+            css={arrowCss}
           >&gt;</button>
         </div>
         <DateType
           type={dt}
           setType={(type: dateType): void => { setDt(type); }}
-          css={css`
-            padding-top: 5px;
-          `}
+          css={css`padding-top: 5px;`}
         />
       </header>
       {/* header end */}
