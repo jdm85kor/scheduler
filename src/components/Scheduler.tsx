@@ -38,7 +38,7 @@ const thisWeek = ((): [string, string] => {
   `${satur.getFullYear()}-${satur.getMonth()}-${satur.getDate()}`];
 })();
 
-const Scheduler: React.FC<Props> = ({ width = 1920, height = 1252}) => {
+const Scheduler: React.FC<Props> = ({ width = 1920 }) => {
   const today = useMemo((): Date => new Date(), []);
   const [dt, setDt] = useState<dateType>(dateType.month);
   const [displayMonth, setDisplayMonth] = useState<string>(`${today.getFullYear()}-${today.getMonth()}`)
@@ -63,11 +63,19 @@ const Scheduler: React.FC<Props> = ({ width = 1920, height = 1252}) => {
     `${moveSatur.getFullYear()}-${moveSatur.getMonth()}-${moveSatur.getDate()}`]);
   }, [displayWeek]);
 
-  const getPlansByDisplayMonth = (): Plan[] | null => {
+  const getPlansByDisplayMonth = useMemo((): Plan[] | null => {
     if (!displayMonth || !plans) return null;
     const splited = displayMonth.split('-');
     return plans[`${splited[0]}-${parseInt(splited[1])+1}`] || null;
-  };
+  }, [displayMonth, plans]);
+
+  const getPlansByDisplayWeek = useMemo((): Plan[] | null => {
+    if (!displayWeek || !plans) return null;
+    const sd = displayWeek[0].split('-').map((d, i) => i !==1?parseInt(d):parseInt(d)+1).slice(0, 2).join('-');
+    const ed = displayWeek[1].split('-').map((d, i) => i !==1?parseInt(d):parseInt(d)+1).slice(0, 2).join('-');
+    
+    return [...(plans[sd]||[]), ...((sd !==ed ?plans[ed]:[])||[])];
+  }, [displayWeek, plans]);
 
   const savePlan = useCallback((date: string, plan: Plan): void => {
     if (!date || !plan) return;
@@ -133,7 +141,7 @@ const Scheduler: React.FC<Props> = ({ width = 1920, height = 1252}) => {
       padding: 0 134px;
       background: #fff;
       width: ${width}px;
-      height: ${height}px;
+      height: auto;
       box-sizing: border-box;
     `}>
       {/* header start */}
@@ -214,17 +222,16 @@ const Scheduler: React.FC<Props> = ({ width = 1920, height = 1252}) => {
       {/* header end */}
       <main>
         {
-          // dt === dateType.month ?
-          false ?
+          dt === dateType.month ?
           <Month
             displayMonth={displayMonth}
-            plans={getPlansByDisplayMonth()}
+            plans={getPlansByDisplayMonth}
             onSavePlan={savePlan}
             onDeletePlan={deletePlan}
           /> :
           <Week
             displayWeek={displayWeek}
-            plans={null}
+            plans={getPlansByDisplayWeek}
             onSavePlan={savePlan}
             onDeletePlan={deletePlan}
           />

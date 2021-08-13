@@ -33,6 +33,7 @@ const Month: React.FC<Props> = ({
   const [planModalInfo, setPlanModalInfo] = useState<{
     isShow: boolean,
     date: string | null,
+    time?: string | null,
     plan: Plan | null,
     type: 'create' | 'modify',
   }>({

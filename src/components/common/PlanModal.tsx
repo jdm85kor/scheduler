@@ -9,6 +9,7 @@ interface Props {
   isShow: boolean,
   plan?: Plan,
   date?: string,
+  time?: string,
   type?: 'create' | 'modify',
   onClose: () => void,
   onSavePlan: (date: string, plan: Plan) => void,
@@ -48,13 +49,35 @@ const PlanModal: React.FC<Props> = ({
   type,
   plan,
   date,
+  time,
 }) => {
   const [isShowConfirmModal, setIsShowConfirmModal] = useState<boolean>(false);
-  const [formData, setFormData] = useState<Plan>({
-    title: '',
-    date: '',
-    startTime: '',
-    endTime: '',
+  const [formData, setFormData] = useState<Plan>(() => {
+    const init = {
+      title: '',
+      date: '',
+      startTime: '',
+      endTime: '',
+    };
+
+    if (plan) return {...plan};
+    else if (date || time) {
+      const splitedDate = date?.split('-');
+      if (splitedDate) {
+        splitedDate[1] = `${parseInt(splitedDate[1]) + 1}`;
+  
+        splitedDate[1] = splitedDate[1].padStart(2, '0');
+        splitedDate[2] = splitedDate[2].padStart(2, '0');
+      }
+
+      return {
+        ...init,
+        date: splitedDate?.join('-') || '',
+        startTime: time || '',
+      };
+    }
+
+    return init;
   });
   
   const handleChangeTitle: React.ChangeEventHandler<HTMLInputElement> = useCallback((e) => {
@@ -120,28 +143,6 @@ const PlanModal: React.FC<Props> = ({
     }
 
   }, [formData]);
-
-  useEffect(() => {
-    if (plan) {
-      const { title, date, startTime, endTime } = plan;
-      setFormData({
-        title,
-        date,
-        startTime,
-        endTime,
-      });
-    } else if (date) {
-      const splitedDate = date.split('-');
-      splitedDate[1] = `${parseInt(splitedDate[1]) + 1}`;
-      if (parseInt(splitedDate[1]) < 10) splitedDate[1] = `0${splitedDate[1]}`;
-      if (parseInt(splitedDate[2]) < 10) splitedDate[2] = `0${splitedDate[2]}`;
-
-      setFormData(prev => ({
-        ...prev,
-        date: splitedDate.join('-'),
-      }));
-    }
-  }, [plan, date]);
 
   return (
     <div>
@@ -240,7 +241,7 @@ const PlanModal: React.FC<Props> = ({
                   }
                 `}
                 id="startTime"
-                defaultValue={plan && timeOptions.find(t => t.value === plan.startTime)?.value}
+                defaultValue={timeOptions.find(t => t.value === formData.startTime)?.value}
                 onChange={handleChangeTime}
               >
                 <option value="" hidden>시간을 선택하세요</option>
@@ -307,7 +308,7 @@ const PlanModal: React.FC<Props> = ({
                 `}
                 id="endTime"
                 onChange={handleChangeTime}
-                defaultValue={plan && timeOptions.find(t => t.value === plan.endTime)?.value}
+                defaultValue={timeOptions.find(t => t.value === formData.endTime)?.value}
               >
                 <option value="" hidden>시간을 선택하세요</option>
                 {
