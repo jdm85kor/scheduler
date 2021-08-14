@@ -186,8 +186,8 @@ const PlanModal: React.FC<Props> = ({
   };
 
   const compareTimes = useCallback((start: string, end: string): boolean => {
-    return new Date(2021, 1, 1, ...end?.split(':').map(d => parseInt(d))).getTime()
-      - new Date(2021, 1, 1, ...start?.split(':').map(d => parseInt(d))).getTime() <= 0
+    return new Date(`${2021}-${1}-${1}-${end}`).getTime()
+      - new Date(`${2021}-${1}-${1}-${start}`).getTime() <= 0
   }, [formData]);
 
   const handleClickSave = useCallback((): void => {

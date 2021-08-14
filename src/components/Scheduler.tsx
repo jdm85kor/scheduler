@@ -108,14 +108,21 @@ const Scheduler: React.FC<Props> = ({ width = 1920 }) => {
 
     if (plan.id) { // modify
       const newPlans = plans[date];
-      const idx = newPlans.findIndex(d => d.id === plan.id) || 0;
-      newPlans[idx] = {...plan};
-      setPlans(prev => {
-        return {
-          ...prev,
-          [date]: newPlans,
-        };
-      });
+
+      const others = newPlans.filter(p => p.id !== plan.id);
+      if (isDupulicatePlan(others.filter(d => d.date === plan.date ), plan)) {
+        alert('중복된 일정이 있습니다. 다시 등록해주세요.');
+      } else {
+        const idx = newPlans.findIndex(d => d.id === plan.id) || 0;
+        newPlans[idx] = {...plan };
+
+        setPlans(prev => {
+          return {
+            ...prev,
+            [date]: newPlans,
+          };
+        });
+      }
     } else { // create
       const newPlan = {
         ...plan,
@@ -128,13 +135,18 @@ const Scheduler: React.FC<Props> = ({ width = 1920 }) => {
             [date]: [newPlan],
           };
         } else if (prev[date]) {
-          return {
-            ...prev,
-            [date]: [
-              ...prev[date],
-              newPlan,
-            ]
-          };
+          if (isDupulicatePlan(prev[date].filter(d => d.date === newPlan.date ), newPlan)) {
+            alert('중복된 일정이 있습니다. 다시 등록해주세요.');
+            return prev;
+          } else {
+            return {
+              ...prev,
+              [date]: [
+                ...prev[date],
+                newPlan,
+              ]
+            };
+          }
         } else {
           return {
             ...prev,
@@ -159,6 +171,18 @@ const Scheduler: React.FC<Props> = ({ width = 1920 }) => {
     const splited = date.split('-').map(d => parseInt(d));
     return `${splited[0]}년 ${splited[1] + 1}월 ${splited[2]}일`
   }
+
+  const isDupulicatePlan = (targets: Plan[], plan: Plan): boolean => {
+    const isInclude = (s:string, e:string, date: string, t: string) =>
+      new Date(`${date},${s}`) < new Date(`${date},${t}`) &&
+      new Date(`${date},${t}`) < new Date(`${date},${e}`);
+    
+    return targets.some(t => isInclude(t.startTime, t.endTime, plan.date, plan.startTime) ||
+      isInclude(t.startTime, t.endTime, plan.date, plan.endTime) ||
+      isInclude(plan.startTime, plan.endTime, plan.date, t.startTime) ||
+      isInclude(plan.startTime, plan.endTime, plan.date, t.endTime)
+    );
+  };
 
   return (
     <div css={css`
