@@ -93,13 +93,14 @@ const WeekTitle: React.FC<Props> = ({ startDate }) => {
                 css={css`
                   display: inline-block;
                   margin-top: 10px;
-                  color: #fff;
+                  color: ${d.color};
                   ${
                     isToday(idx) &&
                     `
                       width: 20px;
                       background: #0078FF;
                       border-radius: 100%;
+                      color: #fff;
                     `
                   }
                   
